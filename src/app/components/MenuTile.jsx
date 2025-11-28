@@ -25,9 +25,9 @@ export default function MenuTile({ item, index, language, onOpenProduct }) {
       </div>
       
       {/* Bottom-left text */}
-      <div className="absolute bottom-24 left-6 text-white max-w-md">
-        <h1 className="text-3xl font-bold mb-2">{title}</h1>
-        <p className="text-lg opacity-90">{subtitle}</p>
+      <div className="absolute bottom-6 left-6 text-white max-w-md">
+        <h1 className="text-xl font-bold mb-2">{title}</h1>
+        <p className="text-base opacity-90">{subtitle}</p>
       </div>
       
       {/* Bottom-right button */}
