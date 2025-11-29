@@ -1,7 +1,10 @@
+
 "use client";
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 
+// ProductDetail Component with animation
 export default function ProductDetail({ item, onClose, language }) {
   const [selectedSize, setSelectedSize] = useState(item.sizes[0]);
   const [selectedOptions, setSelectedOptions] = useState([]);
@@ -18,17 +21,17 @@ export default function ProductDetail({ item, onClose, language }) {
   const ingredients = language === "de" ? item.ingredients_de : item.ingredients_en;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center">
+    <motion.div
+      initial={{ y: '100%' }}
+      animate={{ y: 0 }}
+      exit={{ y: '100%' }}
+      transition={{
+        duration: 0.6,
+        ease: [0.25, 0.1, 0.25, 1],
+      }}
+      className="fixed inset-0 z-50 flex items-end justify-center"
+    >
       <div className="w-full max-w-[560px] mx-auto relative">
-        {/* Background Image (peek at top) */}
-        {/* <div className="absolute top-0 left-0 right-0 h-48 overflow-hidden">
-          <img 
-            src={item.image_url} 
-            alt={title} 
-            className="w-full h-full object-cover" 
-          />
-        </div> */}
-
         {/* White Modal Container */}
         <div className="bg-white rounded-t-3xl mt-32 p-6 pb-8 shadow-2xl relative z-10">
           {/* Product Title & Ingredients */}
@@ -113,6 +116,6 @@ export default function ProductDetail({ item, onClose, language }) {
           </button>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
