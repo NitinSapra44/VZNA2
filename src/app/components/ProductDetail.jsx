@@ -1,8 +1,9 @@
 
 "use client";
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { X } from "lucide-react";
+import Image from "next/image";
 
 // ProductDetail Component with animation
 export default function ProductDetail({ item, onClose, language }) {
@@ -74,24 +75,13 @@ export default function ProductDetail({ item, onClose, language }) {
                   >
                     <div className="w-12 h-12 mx-auto mb-2 flex items-center justify-center">
                       {option.type === 'glutenfrei' && (
-                        <svg className="w-full h-full" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="3">
-                          <circle cx="50" cy="50" r="45" />
-                          <line x1="20" y1="80" x2="80" y2="20" />
-                          <path d="M 50 20 L 45 35 L 30 35 L 42 45 L 37 60 L 50 50 L 63 60 L 58 45 L 70 35 L 55 35 Z" fill="currentColor" />
-                        </svg>
+                        <Image src="/GlutenFree.svg" alt="Gluten Free" width={40} height={40} />
                       )}
                       {option.type === 'vegan' && (
-                        <svg className="w-full h-full" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="3">
-                          <circle cx="50" cy="50" r="45" />
-                          <path d="M 50 30 Q 35 45 35 60 Q 35 75 50 85 Q 65 75 65 60 Q 65 45 50 30 Z" fill="none" />
-                          <path d="M 50 30 L 65 45" />
-                        </svg>
+                        <Image src="/Vegan.svg" alt="Gluten Free" width={40} height={40} /> 
                       )}
                       {option.type === 'vollkorn' && (
-                        <svg className="w-full h-full" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="3">
-                          <circle cx="50" cy="50" r="45" />
-                          <path d="M 50 25 L 50 75 M 40 35 L 50 25 L 60 35 M 35 50 L 65 50 M 40 65 L 50 75 L 60 65" />
-                        </svg>
+                        <Image src="/Vollkorn.svg" alt="Gluten Free" width={40} height={40} /> 
                       )}
                     </div>
                     <div className="font-semibold text-xs">

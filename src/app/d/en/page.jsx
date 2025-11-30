@@ -7,7 +7,6 @@ import MenuDropdown from "@/app/components/MenuDropdown";
 import ProductDetail from "@/app/components/ProductDetail";
 import { menuData } from "@/data/menuData";
 
-
 /* ---------------------------------------------
    SORTING LOGIC (GLOBAL + REUSABLE)
 ---------------------------------------------- */
@@ -15,12 +14,10 @@ function sortItems(a, b) {
   const catA = menuData.categories.find(c => c.id === a.category_id);
   const catB = menuData.categories.find(c => c.id === b.category_id);
 
-  // Sort by category order_index
   if (catA.order_index !== catB.order_index) {
     return catA.order_index - catB.order_index;
   }
 
-  // If both have subcategories, sort them
   if (a.subcategory_id && b.subcategory_id) {
     const subA = catA.subcategories?.find(s => s.id === a.subcategory_id);
     const subB = catB.subcategories?.find(s => s.id === b.subcategory_id);
@@ -30,10 +27,8 @@ function sortItems(a, b) {
     }
   }
 
-  // Sort by item order within group
   return a.order_index - b.order_index;
 }
-
 
 export default function MenuPage() {
   const lang = "en";  
@@ -44,20 +39,15 @@ export default function MenuPage() {
   const [currentItems, setCurrentItems] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
 
-  // Sort categories once (no accidental mutation)
   const categories = [...menuData.categories].sort(
     (a, b) => a.order_index - b.order_index
   );
 
   useEffect(() => {
-    // Load all sorted items initially
     const sorted = [...menuData.items].sort(sortItems);
     setCurrentItems(sorted);
   }, []);
 
-  /* ---------------------------------------------
-     FILTER HANDLERS
-  ---------------------------------------------- */
   const handleShowAll = () => {
     setCurrentItems([...menuData.items].sort(sortItems));
     setSelectedCategory(null);
@@ -107,13 +97,19 @@ export default function MenuPage() {
     setSelectedItem(currentItems[index]);
   };
 
-  /* ---------------------------------------------
-     UI COMPONENT
-  ---------------------------------------------- */
-
   return (
     <AppViewport>
       <div className="relative h-full w-full">
+
+        {/* Fixed Logo - Top Left (absolute to stay within viewport) */}
+        <div className="absolute top-6 left-6 z-50 pointer-events-none">
+          <img 
+            src="/logo.svg"
+            alt="Restaurant Logo" 
+            className="h-16 w-auto drop-shadow-lg border-b-2 border-white pb-3"
+          />
+            <p className="text-white  text-xl">Dübendorf</p>
+        </div>
 
         {/* Dropdown navigation */}
         <MenuDropdown
