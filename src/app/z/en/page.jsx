@@ -5,7 +5,7 @@ import VerticalSnap from "@/app/components/VerticalSnap";
 import MenuTile from "@/app/components/MenuTile";
 import MenuDropdown from "@/app/components/MenuDropdown";
 import ProductDetail from "@/app/components/ProductDetail";
-import { menuData } from "@/data/menuData";
+import { menuData2 as menuData } from "@/data/menudata2";
 
 
 /* ---------------------------------------------

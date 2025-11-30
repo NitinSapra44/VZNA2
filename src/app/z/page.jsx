@@ -22,7 +22,7 @@ export default function LanguageScreen() {
     
     lastScrollTime.current = now;
     isNavigating.current = true;
-    router.push(`/d/${language}`);
+    router.push(`/z/${language}`);
   };
 
   useEffect(() => {
