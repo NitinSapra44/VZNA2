@@ -28,7 +28,7 @@ export default function LanguageScreen() {
     <AppViewport>
       {/* 🔹 Intro Animation (Full Screen) */}
       {!showContent && (
-        <div className="flex items-center justify-center h-full w-full bg-[#DBDBDB]">
+        <div className="flex items-center justify-center h-full w-full">
           <Lottie animationData={animationData2} autoplay loop={false} />
         </div>
       )}

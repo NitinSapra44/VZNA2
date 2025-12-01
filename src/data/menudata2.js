@@ -10,43 +10,43 @@ export const menuData2 = {
     {
       id: 2,
       name_de: "Pizze",
-      name_en: "Pizzas",
+      name_en: "Pizze",
       has_subcategories: true,
       order_index: 2,
       subcategories: [
-        { id: 21, name_de: "Pizze Speciali", name_en: "Special Pizzas", order_index: 1 },
-        { id: 22, name_de: "Pizze Classiche", name_en: "Classic Pizzas", order_index: 2 },
-        { id: 23, name_de: "Pizze Verdure", name_en: "Vegetable Pizzas", order_index: 3 },
-        { id: 24, name_de: "Pizze Carne", name_en: "Meat Pizzas", order_index: 4 },
-        { id: 25, name_de: "Pizze Pesce", name_en: "Fish Pizzas", order_index: 5 },
-        { id: 26, name_de: "Pizze Bianche", name_en: "White Pizzas", order_index: 6 }
+        { id: 21, name_de: "Pizze Speciali", name_en: "Pizze Speciali", order_index: 1 },
+        { id: 22, name_de: "Pizze Classiche", name_en: "Pizze Classiche", order_index: 2 },
+        { id: 23, name_de: "Pizze Verdure", name_en: "Pizze Verdure", order_index: 3 },
+        { id: 24, name_de: "Pizze Carne", name_en: "Pizze Carne", order_index: 4 },
+        { id: 25, name_de: "Pizze Pesce", name_en: "Pizze Pesce", order_index: 5 },
+        { id: 26, name_de: "Pizze Bianche", name_en: "Pizze Bianche", order_index: 6 }
       ]
     },
     {
       id: 3,
       name_de: "Calzoni",
-      name_en: "Calzones",
+      name_en: "Calzoni",
       has_subcategories: false,
       order_index: 3
     },
     {
       id: 4,
       name_de: "Pinse",
-      name_en: "Pinsa",
+      name_en: "Pinse",
       has_subcategories: false,
       order_index: 4
     },
     {
       id: 5,
       name_de: "Paste",
-      name_en: "Pasta",
+      name_en: "Paste",
       has_subcategories: false,
       order_index: 5
     },
     {
       id: 6,
       name_de: "Lasagne",
-      name_en: "Lasagna",
+      name_en: "Lasagne",
       has_subcategories: false,
       order_index: 6
     }
