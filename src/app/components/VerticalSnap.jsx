@@ -24,7 +24,7 @@ export default function VerticalSnap({ children }) {
       e.preventDefault();
       const now = Date.now();
       
-      if (now - lastScrollTime.current < 800) return;
+      if (now - lastScrollTime.current < 600) return;
       if (isScrolling.current) return;
 
       const itemHeight = window.innerHeight;
@@ -37,7 +37,7 @@ export default function VerticalSnap({ children }) {
           top: currentPage.current * itemHeight,
           behavior: 'smooth'
         });
-        setTimeout(() => { isScrolling.current = false; }, 800);
+        setTimeout(() => { isScrolling.current = false; }, 600);
       } else if (e.deltaY < -30 && currentPage.current > 0) {
         lastScrollTime.current = now;
         isScrolling.current = true;
@@ -46,7 +46,7 @@ export default function VerticalSnap({ children }) {
           top: currentPage.current * itemHeight,
           behavior: 'smooth'
         });
-        setTimeout(() => { isScrolling.current = false; }, 800);
+        setTimeout(() => { isScrolling.current = false; }, 600);
       }
     };
 
@@ -65,18 +65,18 @@ export default function VerticalSnap({ children }) {
       e.preventDefault();
       
       const now = Date.now();
-      if (now - lastScrollTime.current < 800) return;
+      if (now - lastScrollTime.current < 600) return;
       if (isScrolling.current) return;
 
       const touchEndY = e.changedTouches[0].clientY;
       const diff = touchStartY.current - touchEndY;
       const timeDiff = now - touchStartTime.current;
       
-      // Require minimum swipe distance OR fast swipe velocity
-      const threshold = 50;
+      // More sensitive threshold for faster response
+      const threshold = 30; // Reduced from 50
       const velocity = Math.abs(diff) / timeDiff;
       
-      if (Math.abs(diff) > threshold || velocity > 0.5) {
+      if (Math.abs(diff) > threshold || velocity > 0.3) {
         const itemHeight = window.innerHeight;
 
         lastScrollTime.current = now;
