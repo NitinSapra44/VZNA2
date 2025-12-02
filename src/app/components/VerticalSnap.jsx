@@ -63,6 +63,8 @@ export default function VerticalSnap({ children }) {
     };
 
     const handleTouchEnd = (e) => {
+      e.preventDefault(); // Prevent any default scroll behavior
+      
       const now = Date.now();
       if (now - lastScrollTime.current < 800) return;
       if (isScrolling.current) return;
@@ -83,6 +85,7 @@ export default function VerticalSnap({ children }) {
         lastScrollTime.current = now;
         isScrolling.current = true;
 
+        // ALWAYS scroll by exactly ONE page, regardless of swipe distance
         if (diff > 0 && currentIndex < children.length - 1) {
           // Swipe up - go to next (only one page)
           container.scrollTo({
@@ -95,9 +98,24 @@ export default function VerticalSnap({ children }) {
             top: (currentIndex - 1) * itemHeight,
             behavior: 'smooth'
           });
+        } else {
+          // Invalid swipe, snap back to current position
+          container.scrollTo({
+            top: currentIndex * itemHeight,
+            behavior: 'smooth'
+          });
         }
 
         setTimeout(() => { isScrolling.current = false; }, 800);
+      } else {
+        // Snap back to current position if swipe was too small
+        const currentScroll = container.scrollTop;
+        const itemHeight = window.innerHeight;
+        const currentIndex = Math.round(currentScroll / itemHeight);
+        container.scrollTo({
+          top: currentIndex * itemHeight,
+          behavior: 'smooth'
+        });
       }
     };
 
