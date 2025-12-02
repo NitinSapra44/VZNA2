@@ -1,4 +1,3 @@
-// src/app/components/VerticalSnap.jsx
 "use client";
 import { useEffect, useRef } from "react";
 import { useAppStore } from "@/store/appStore";
@@ -9,6 +8,7 @@ export default function VerticalSnap({ children }) {
   const isScrolling = useRef(false);
   const lastScrollTime = useRef(0);
   const touchStartY = useRef(0);
+  const touchStartTime = useRef(0);
 
   useEffect(() => {
     setScrollRef(ref.current);
@@ -21,18 +21,16 @@ export default function VerticalSnap({ children }) {
     // Handle wheel events (desktop)
     const handleWheel = (e) => {
       e.preventDefault();
-      
       const now = Date.now();
-      // Prevent multiple scrolls within 800ms
+      
       if (now - lastScrollTime.current < 800) return;
       if (isScrolling.current) return;
-      
+
       const currentScroll = container.scrollTop;
       const itemHeight = window.innerHeight;
       const currentIndex = Math.round(currentScroll / itemHeight);
-      
+
       if (e.deltaY > 30 && currentIndex < children.length - 1) {
-        // Scroll down
         lastScrollTime.current = now;
         isScrolling.current = true;
         container.scrollTo({
@@ -41,7 +39,6 @@ export default function VerticalSnap({ children }) {
         });
         setTimeout(() => { isScrolling.current = false; }, 800);
       } else if (e.deltaY < -30 && currentIndex > 0) {
-        // Scroll up
         lastScrollTime.current = now;
         isScrolling.current = true;
         container.scrollTo({
@@ -55,50 +52,64 @@ export default function VerticalSnap({ children }) {
     // Handle touch events (mobile)
     const handleTouchStart = (e) => {
       touchStartY.current = e.touches[0].clientY;
+      touchStartTime.current = Date.now();
+    };
+
+    const handleTouchMove = (e) => {
+      // Prevent native scrolling during touch
+      if (isScrolling.current) {
+        e.preventDefault();
+      }
     };
 
     const handleTouchEnd = (e) => {
       const now = Date.now();
-      if (now - lastScrollTime.current < 400) return;
+      if (now - lastScrollTime.current < 800) return;
       if (isScrolling.current) return;
 
       const touchEndY = e.changedTouches[0].clientY;
       const diff = touchStartY.current - touchEndY;
-      const threshold = 30;
-
-      if (Math.abs(diff) > threshold) {
+      const timeDiff = now - touchStartTime.current;
+      
+      // Require minimum swipe distance OR fast swipe velocity
+      const threshold = 50;
+      const velocity = Math.abs(diff) / timeDiff;
+      
+      if (Math.abs(diff) > threshold || velocity > 0.5) {
         const currentScroll = container.scrollTop;
         const itemHeight = window.innerHeight;
         const currentIndex = Math.round(currentScroll / itemHeight);
-        
+
         lastScrollTime.current = now;
         isScrolling.current = true;
-        
+
         if (diff > 0 && currentIndex < children.length - 1) {
-          // Swipe up - go to next
+          // Swipe up - go to next (only one page)
           container.scrollTo({
             top: (currentIndex + 1) * itemHeight,
             behavior: 'smooth'
           });
         } else if (diff < 0 && currentIndex > 0) {
-          // Swipe down - go to previous
+          // Swipe down - go to previous (only one page)
           container.scrollTo({
             top: (currentIndex - 1) * itemHeight,
             behavior: 'smooth'
           });
         }
-        
+
         setTimeout(() => { isScrolling.current = false; }, 800);
       }
     };
 
     container.addEventListener('wheel', handleWheel, { passive: false });
     container.addEventListener('touchstart', handleTouchStart, { passive: true });
+    container.addEventListener('touchmove', handleTouchMove, { passive: false });
     container.addEventListener('touchend', handleTouchEnd, { passive: true });
 
     return () => {
       container.removeEventListener('wheel', handleWheel);
       container.removeEventListener('touchstart', handleTouchStart);
+      container.removeEventListener('touchmove', handleTouchMove);
       container.removeEventListener('touchend', handleTouchEnd);
     };
   }, [children.length, setScrollRef]);
@@ -107,6 +118,11 @@ export default function VerticalSnap({ children }) {
     <div
       ref={ref}
       className="h-full w-full overflow-y-scroll snap-y snap-mandatory no-scrollbar"
+      style={{ 
+        scrollSnapType: 'y mandatory',
+        overscrollBehavior: 'contain',
+        WebkitOverflowScrolling: 'touch'
+      }}
     >
       {children.map((child, i) => (
         <div key={i} className="snap-start h-full w-full">
