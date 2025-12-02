@@ -52,16 +52,46 @@ export default function VerticalSnap({ children }) {
 
     // Handle touch events (mobile)
     const handleTouchStart = (e) => {
+      // Check if touch started on an interactive element
+      const target = e.target;
+      const isInteractive = target.closest('button, a, input, textarea, select, [role="button"]');
+      
+      if (isInteractive) {
+        // Don't interfere with interactive elements
+        return;
+      }
+      
       touchStartY.current = e.touches[0].clientY;
       touchStartTime.current = Date.now();
     };
 
     const handleTouchMove = (e) => {
-      // Always prevent native scrolling during touch
-      e.preventDefault();
+      // Check if we're interacting with a button or interactive element
+      const target = e.target;
+      const isInteractive = target.closest('button, a, input, textarea, select, [role="button"]');
+      
+      if (isInteractive) {
+        // Allow native behavior for interactive elements
+        return;
+      }
+      
+      // Only prevent scrolling if we have a valid touch start
+      if (touchStartY.current !== 0) {
+        e.preventDefault();
+      }
     };
 
     const handleTouchEnd = (e) => {
+      // Check if touch ended on an interactive element
+      const target = e.target;
+      const isInteractive = target.closest('button, a, input, textarea, select, [role="button"]');
+      
+      if (isInteractive) {
+        // Don't interfere with interactive elements
+        touchStartY.current = 0; // Reset
+        return;
+      }
+      
       e.preventDefault();
       
       const now = Date.now();
