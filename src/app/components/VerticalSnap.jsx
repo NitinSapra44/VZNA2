@@ -59,7 +59,7 @@ export default function VerticalSnap({ children }) {
 
     const handleTouchEnd = (e) => {
       const now = Date.now();
-      if (now - lastScrollTime.current < 800) return;
+      if (now - lastScrollTime.current < 1800) return;
       if (isScrolling.current) return;
 
       const touchEndY = e.changedTouches[0].clientY;

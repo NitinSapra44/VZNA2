@@ -36,8 +36,8 @@ export default function MenuTile({ item, index, language, onOpenProduct }) {
 
       {/* Bottom-left text */}
       <div className="absolute bottom-6 left-6 text-white max-w-md">
-        <h1 className="text-xl font-bold mb-2">{title}</h1>
-        <p className="text-base opacity-90">{subtitle}</p>
+        <h1 style={{ fontFamily: 'var(--font-fira-sans)' }} className="text-xl font-bold mb-2">{title}</h1>
+        <p style={{ fontFamily: 'var(--font-fira-sans)' }} className="text-base opacity-90">{subtitle}</p>
       </div>
 
       {/* Bottom-right animated button */}

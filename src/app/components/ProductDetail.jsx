@@ -30,15 +30,15 @@ export default function ProductDetail({ item, onClose, language }) {
         duration: 0.6,
         ease: [0.25, 0.1, 0.25, 1],
       }}
-      className="fixed inset-0 z-50 flex items-end justify-center"
+      className="fixed inset-0 z-50 flex items-end justify-center pb-4 mb-4"
     >
       <div className="w-full max-w-[560px] mx-auto relative">
         {/* White Modal Container */}
         <div className="bg-white rounded-t-3xl mt-32 p-6 pb-8 shadow-2xl relative z-10">
           {/* Product Title & Ingredients */}
           <div className="mb-6">
-            <h2 className="text-2xl font-bold mb-3">{title}</h2>
-            <p className="text-gray-600 leading-relaxed">{ingredients}</p>
+            <h2 style={{ fontFamily: 'var(--font-fira-sans)' }} className="text-base  mb-3">{title}</h2>
+            <p style={{ fontFamily: 'var(--font-fira-sans)' }} className="text-gray-600 text-base leading-relaxed">{ingredients}</p>
           </div>
 
           {/* Sizes */}

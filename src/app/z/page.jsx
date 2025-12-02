@@ -34,12 +34,12 @@ export default function LanguageScreen() {
       )}
 
       {/* 🔹 Main Screen */}
-      {showContent && (
+     {showContent && (
         <div className="animate-fade-in flex flex-col items-center justify-center h-full gap-8 bg-[#DBDBDB]">
           <div className="bg-white h-[95%] w-[90%] rounded-3xl flex flex-col items-center justify-center gap-6">
 
             {/* Heading */}
-            <h2 className="text-xl font-semibold text-gray-600">
+            <h2 style={{ fontFamily: 'var(--font-fira-sans)' }} className="text-xl font-semibold text-gray-600">
               {language === "de" ? "Impressum" : "Welcome"}
             </h2>
 
@@ -47,20 +47,21 @@ export default function LanguageScreen() {
             <LanguageToggle />
 
             {/* Main Animation */}
-            <div style={{ width: "120%" }}>
+            <div style={{ width: "100%" }}>
               <Lottie animationData={animationData} loop autoplay />
             </div>
 
             {/* 🔹 Instruction Text */}
-            <p className="text-center text-gray-600 text-lg px-6 leading-snug">
+            <p style={{ fontFamily: 'var(--font-fira-sans)' }} className="text-center text-gray-600 text-lg px-6 leading-snug">
               {language === "de"
                 ? "Streiche nach oben, um das Menü zu entdecken."
                 : "Swipe up to discover the menu."}
             </p>
 
             {/* 🔹 Dynamic Button */}
-            <button
-              onClick={() => router.push(`/z/${language}`)}
+            <button 
+            style={{ fontFamily: 'var(--font-fira-sans)' }}
+              onClick={() => router.push(`/d/${language}`)}
               className="flex items-center gap-4 bg-[#4CAF50] text-white font-semibold px-6 py-3 rounded-full text-lg active:scale-95 transition-all shadow-md"
             >
               {language === "de" ? "Verstanden" : "Got it"}

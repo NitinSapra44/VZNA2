@@ -15,7 +15,8 @@ export default function LanguageToggle() {
       <div className="flex w-full relative z-10">
         {/* Deutsch */}
         <button
-          className={`flex-1 flex justify-center text-lg font-semibold transition-all duration-300 ${
+        style={{ fontFamily: 'var(--font-fira-sans)' }}
+          className={`flex-1 flex justify-center text-base font-bold transition-all duration-300 ${
             language === "de" ? "text-black" : "text-white"
           }`}
           onClick={() => setLanguage("de")}
@@ -25,7 +26,8 @@ export default function LanguageToggle() {
 
         {/* English */}
         <button
-          className={`flex-1 flex justify-center text-lg font-semibold transition-all duration-300 ${
+        style={{ fontFamily: 'var(--font-fira-sans)' }}
+          className={`flex-1 flex justify-center text-base font-bold transition-all duration-300 ${
             language === "en" ? "text-black" : "text-white"
           }`}
           onClick={() => setLanguage("en")}
