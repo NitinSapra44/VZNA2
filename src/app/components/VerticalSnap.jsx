@@ -15,18 +15,18 @@ export default function VerticalSnap({ children }) {
     const container = containerRef.current;
     if (!container) return;
 
-    const scrollToPage = (index) => {
-      if (scrollLocked.current) return;
+    const scrollToPage = (index, instant = false) => {
+      if (scrollLocked.current && !instant) return;
       
       scrollLocked.current = true;
       pageIndex.current = index;
 
       container.scrollTo({
         top: index * PAGE_HEIGHT(),
-        behavior: "smooth",
+        behavior: instant ? "instant" : "smooth",
       });
 
-      // Fallback unlock in case scrollend doesn't fire
+      // Fallback unlock
       if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
       scrollTimeout.current = setTimeout(() => {
         scrollLocked.current = false;
@@ -52,15 +52,13 @@ export default function VerticalSnap({ children }) {
 
     container.addEventListener("scrollend", handleScrollEnd);
 
-    /* DESKTOP WHEEL - Queue scrolls instead of ignoring */
+    /* DESKTOP WHEEL - With infinite loop */
     let wheelTimeout = null;
     const handleWheel = (e) => {
       e.preventDefault();
 
-      // Clear any pending wheel events
       if (wheelTimeout) clearTimeout(wheelTimeout);
 
-      // If locked, queue the scroll for after unlock
       if (scrollLocked.current) {
         wheelTimeout = setTimeout(() => {
           if (!scrollLocked.current) {
@@ -75,14 +73,21 @@ export default function VerticalSnap({ children }) {
 
     const processWheelScroll = (deltaY) => {
       const direction = deltaY > 0 ? 1 : -1;
-      const next = pageIndex.current + direction;
+      let next = pageIndex.current + direction;
 
-      if (next < 0 || next >= PAGE_COUNT) return;
+      // INFINITE LOOP LOGIC
+      if (next < 0) {
+        // Going up from first page → jump to last page
+        next = PAGE_COUNT - 1;
+      } else if (next >= PAGE_COUNT) {
+        // Going down from last page → jump to first page
+        next = 0;
+      }
 
       scrollToPage(next);
     };
 
-    /* MOBILE TOUCH */
+    /* MOBILE TOUCH - With infinite loop */
     const handleTouchStart = (e) => {
       const isInteractive = e.target.closest(
         "button, a, input, textarea, select, [role='button']"
@@ -93,7 +98,6 @@ export default function VerticalSnap({ children }) {
     };
 
     const handleTouchMove = (e) => {
-      // Prevent scroll while locked
       if (scrollLocked.current) {
         e.preventDefault();
       }
@@ -105,31 +109,34 @@ export default function VerticalSnap({ children }) {
       const endY = e.changedTouches[0].clientY;
       const diff = touchStartY.current - endY;
 
-      // Minimum swipe threshold (increased for better control)
+      // Minimum swipe threshold
       if (Math.abs(diff) < 50) {
         scrollToPage(pageIndex.current);
         return;
       }
 
       const direction = diff > 0 ? 1 : -1;
-      const next = pageIndex.current + direction;
+      let next = pageIndex.current + direction;
 
-      if (next < 0 || next >= PAGE_COUNT) {
-        scrollToPage(pageIndex.current);
-        return;
+      // INFINITE LOOP LOGIC
+      if (next < 0) {
+        // Swipe down from first page → jump to last page
+        next = PAGE_COUNT - 1;
+      } else if (next >= PAGE_COUNT) {
+        // Swipe up from last page → jump to first page
+        next = 0;
       }
 
       scrollToPage(next);
     };
 
-    // Prevent manual scrolling completely
+    // Prevent manual scrolling
     const handleScroll = () => {
       if (!scrollLocked.current) {
         const target = pageIndex.current * PAGE_HEIGHT();
         const current = container.scrollTop;
         const diff = Math.abs(current - target);
 
-        // If user somehow scrolled manually, snap back
         if (diff > 5) {
           container.scrollTo({ top: target });
         }
