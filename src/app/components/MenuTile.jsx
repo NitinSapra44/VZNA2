@@ -23,12 +23,12 @@ export default function MenuTile({ item, index, language }) {
   const subtitle = language === "de" ? item.subtitle_de : item.subtitle_en;
 
   return (
-    <div className="relative w-full h-[100svh] snap-center">
-      {/* Background Image */}
-      <img
-        src={item.image_url}
-        alt={title}
-        className="absolute inset-0 w-full h-[100svh] object-cover"
+    <div className="relative w-full h-[100svh] snap-center overflow-hidden">
+      
+      {/* Background image FIXED: no layout shift */}
+      <div
+        className="absolute inset-0 bg-cover bg-center"
+        style={{ backgroundImage: `url(${item.image_url})` }}
       />
 
       {/* Gradient Overlay */}
@@ -36,21 +36,15 @@ export default function MenuTile({ item, index, language }) {
 
       {/* Bottom-left text */}
       <div className="absolute bottom-6 left-6 text-white max-w-md">
-        <h1
-          style={{ fontFamily: "var(--font-fira-sans)" }}
-          className="text-base mb-2"
-        >
+        <h1 className="text-base mb-2" style={{ fontFamily: "var(--font-fira-sans)" }}>
           {title}
         </h1>
-        <p
-          style={{ fontFamily: "var(--font-fira-sans)" }}
-          className="text-base opacity-90"
-        >
+        <p className="text-base opacity-90" style={{ fontFamily: "var(--font-fira-sans)" }}>
           {subtitle}
         </p>
       </div>
 
-      {/* Bottom-right static button (NO ANIMATIONS) */}
+      {/* Bottom-right button */}
       {!isOpen && (
         <button
           onClick={handleOpen}
@@ -68,7 +62,7 @@ export default function MenuTile({ item, index, language }) {
         </button>
       )}
 
-      {/* Product Detail Drawer */}
+      {/* Drawer */}
       <AnimatePresence>
         {showDrawer && (
           <ProductDetail

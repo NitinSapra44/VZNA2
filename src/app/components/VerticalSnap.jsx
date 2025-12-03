@@ -2,134 +2,142 @@
 import { useEffect, useRef } from "react";
 
 export default function VerticalSnap({ children }) {
-  const ref = useRef(null);
-  const isLocked = useRef(false);
-  const currentPage = useRef(0);
+  const containerRef = useRef(null);
+
+  // TRUE page index — never rely on scrollTop
+  const pageIndex = useRef(0);
+
+  // Lock while animation is in progress
+  const scrollLocked = useRef(false);
+
+  // For touch detection
+  const touchStartY = useRef(0);
+
+  const PAGE_COUNT = children.length;
+  const PAGE_HEIGHT = () => window.innerHeight; // correct at all times
 
   useEffect(() => {
-    const container = ref.current;
+    const container = containerRef.current;
     if (!container) return;
 
-    const PAGE_COUNT = children.length;
-    const THRESHOLD = 40;
+    /* --------------------------------------------
+       HARD-LOCK SCROLLING (Like TikTok)
+       One scroll → one snap → never skip
+    --------------------------------------------- */
 
-    const pageHeight = () => window.innerHeight;
+    const scrollToPage = (index) => {
+      scrollLocked.current = true;
 
-    /* ------------------------------------------------
-       1) KEEP SCROLL TOP EXACTLY AT PAGE BOUNDARIES
-       ------------------------------------------------*/
-    const correctScrollDrift = () => {
-      if (isLocked.current) return; // don't correct mid-snap
+      container.scrollTo({
+        top: index * PAGE_HEIGHT(),
+        behavior: "smooth",
+      });
+    };
 
-      const target = currentPage.current * pageHeight();
+    /* --------------------------------------------
+       Unlock strictly after smooth scrolling ends
+       (scrollend works on Safari + Chrome)
+    --------------------------------------------- */
+    const handleScrollEnd = () => {
+      scrollLocked.current = false;
+
+      // Correct any micro drift instantly
+      const target = pageIndex.current * PAGE_HEIGHT();
       const diff = Math.abs(container.scrollTop - target);
 
-      if (diff > 2) {
-        // Drift detected → pull back instantly
+      if (diff > 1) {
         container.scrollTo({ top: target });
       }
     };
 
-    container.addEventListener("scroll", correctScrollDrift);
+    container.addEventListener("scrollend", handleScrollEnd);
 
-    /* ------------------------------------------------
-       2) Unlock after animation ends
-       ------------------------------------------------*/
-    const unlock = () => {
-      isLocked.current = false;
-      correctScrollDrift(); // clean drift after every snap
-    };
-
-    container.addEventListener("scrollend", unlock);
-
-    /* ------------------------------------------------
-       3) Desktop wheel scroll
-       ------------------------------------------------*/
+    /* --------------------------------------------
+       Desktop wheel scroll
+    --------------------------------------------- */
     const handleWheel = (e) => {
-      e.preventDefault();
-      if (isLocked.current) return;
+      e.preventDefault(); // FULL control
+
+      if (scrollLocked.current) return;
 
       const direction = e.deltaY > 0 ? 1 : -1;
-      const next = currentPage.current + direction;
+      const next = pageIndex.current + direction;
 
       if (next < 0 || next >= PAGE_COUNT) return;
 
-      isLocked.current = true;
-      currentPage.current = next;
-
-      container.scrollTo({
-        top: next * pageHeight(),
-        behavior: "smooth",
-      });
+      pageIndex.current = next;
+      scrollToPage(next);
     };
 
-    /* ------------------------------------------------
-       4) Touch scroll
-       ------------------------------------------------*/
-    let startY = 0;
+    /* --------------------------------------------
+       Mobile touch swipe
+    --------------------------------------------- */
     const handleTouchStart = (e) => {
-      const interactive = e.target.closest("button, a, input, textarea, select, [role='button']");
-      if (interactive) return;
-      startY = e.touches[0].clientY;
+      const isInteractive = e.target.closest(
+        "button, a, input, textarea, select, [role='button']"
+      );
+      if (isInteractive) return;
+
+      touchStartY.current = e.touches[0].clientY;
     };
 
     const handleTouchEnd = (e) => {
-      if (isLocked.current) return;
+      if (scrollLocked.current) return;
 
-      const diff = startY - e.changedTouches[0].clientY;
+      const endY = e.changedTouches[0].clientY;
+      const diff = touchStartY.current - endY;
 
-      if (Math.abs(diff) < THRESHOLD) {
-        container.scrollTo({
-          top: currentPage.current * pageHeight(),
-          behavior: "smooth",
-        });
+      // Swipe threshold
+      if (Math.abs(diff) < 40) {
+        // Snap back
+        scrollToPage(pageIndex.current);
         return;
       }
 
       const direction = diff > 0 ? 1 : -1;
-      const next = currentPage.current + direction;
+      const next = pageIndex.current + direction;
 
       if (next < 0 || next >= PAGE_COUNT) {
-        container.scrollTo({
-          top: currentPage.current * pageHeight(),
-          behavior: "smooth",
-        });
+        scrollToPage(pageIndex.current);
         return;
       }
 
-      isLocked.current = true;
-      currentPage.current = next;
-
-      container.scrollTo({
-        top: next * pageHeight(),
-        behavior: "smooth",
-      });
+      pageIndex.current = next;
+      scrollToPage(next);
     };
 
+    /* --------------------------------------------
+       LISTENERS
+    --------------------------------------------- */
     container.addEventListener("wheel", handleWheel, { passive: false });
     container.addEventListener("touchstart", handleTouchStart, { passive: true });
     container.addEventListener("touchend", handleTouchEnd, { passive: false });
+
+    /* --------------------------------------------
+       INITIAL positioning (must be exact)
+    --------------------------------------------- */
+    container.scrollTo({ top: 0 });
 
     return () => {
       container.removeEventListener("wheel", handleWheel);
       container.removeEventListener("touchstart", handleTouchStart);
       container.removeEventListener("touchend", handleTouchEnd);
-      container.removeEventListener("scroll", correctScrollDrift);
-      container.removeEventListener("scrollend", unlock);
+      container.removeEventListener("scrollend", handleScrollEnd);
     };
-  }, [children.length]);
+  }, [PAGE_COUNT]);
 
   return (
     <div
-      ref={ref}
-      className="h-[100svh] w-full overflow-y-scroll snap-mandatory snap-y no-scrollbar"
+      ref={containerRef}
+      className="h-[100svh] w-full overflow-y-scroll snap-y snap-mandatory no-scrollbar"
       style={{
         scrollSnapType: "y mandatory",
         overscrollBehavior: "contain",
+        WebkitOverflowScrolling: "touch",
       }}
     >
-      {children.map((child, i) => (
-        <div key={i} className="snap-start h-[100svh] w-full">
+      {children.map((child, index) => (
+        <div key={index} className="h-[100svh] w-full snap-start">
           {child}
         </div>
       ))}
