@@ -56,7 +56,7 @@ export default function VerticalSnap({ children, isDrawerOpen }) {
 
       setTimeout(() => {
         scrollLocked.current = false;
-      }, 250);
+      }, 200);
     };
 
     /* ---------------- DESKTOP WHEEL ---------------- */
@@ -75,7 +75,7 @@ export default function VerticalSnap({ children, isDrawerOpen }) {
         if (next >= PAGE_COUNT) next = 0;
 
         scrollToPage(next);
-      }, 20);
+      }, 10);
     };
 
     /* ---------------- MOBILE SWIPE ---------------- */
@@ -105,7 +105,7 @@ export default function VerticalSnap({ children, isDrawerOpen }) {
       const diff = touchStartY.current - e.changedTouches[0].clientY;
       
       // If swipe is too small, snap back to current page
-      if (Math.abs(diff) < 30) {
+      if (Math.abs(diff) < 20) {
         scrollToPage(pageIndex.current, false);
         return;
       }
@@ -138,7 +138,7 @@ export default function VerticalSnap({ children, isDrawerOpen }) {
         if (diff > 50) {
           container.scrollTo({ top: target, behavior: "instant" });
         }
-      }, 100);
+      }, 50);
     };
 
     /* ---------------- EVENT LISTENERS ---------------- */
@@ -166,12 +166,20 @@ export default function VerticalSnap({ children, isDrawerOpen }) {
       className="h-[100svh] w-full overflow-y-scroll snap-y snap-mandatory no-scrollbar"
       style={{
         scrollSnapType: "y mandatory",
+        scrollSnapStop: "always",
         overscrollBehavior: "none",
         WebkitOverflowScrolling: "touch",
       }}
     >
       {children.map((child, i) => (
-        <div key={i} className="h-[100svh] w-full snap-start">
+        <div 
+          key={i} 
+          className="h-[100svh] w-full snap-start snap-always"
+          style={{
+            scrollSnapAlign: "start",
+            scrollSnapStop: "always",
+          }}
+        >
           {child}
         </div>
       ))}
