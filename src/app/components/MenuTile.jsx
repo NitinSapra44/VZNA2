@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import ProductDetail from "./ProductDetail";
 
@@ -7,18 +7,19 @@ export default function MenuTile({ item, index, language, onDrawerToggle }) {
   const [isOpen, setIsOpen] = useState(false);
   const [showDrawer, setShowDrawer] = useState(false);
 
-  const handleOpen = () => {
+  const handleOpen = (e) => {
+    e.stopPropagation(); // Prevent event from bubbling to VerticalSnap
     if (!isOpen) {
       setIsOpen(true);
       setShowDrawer(true);
-      onDrawerToggle(true); // 🔥 Tell VerticalSnap drawer opened
+      onDrawerToggle(true); // Tell VerticalSnap drawer opened
     }
   };
 
   const handleClose = () => {
     setShowDrawer(false);
     setIsOpen(false);
-    onDrawerToggle(false); // 🔥 Tell VerticalSnap drawer closed
+    onDrawerToggle(false); // Tell VerticalSnap drawer closed
   };
 
   const title = language === "de" ? item.title_de : item.title_en;
@@ -26,7 +27,6 @@ export default function MenuTile({ item, index, language, onDrawerToggle }) {
 
   return (
     <div className="relative w-full h-[100svh] snap-center overflow-hidden">
-
       {/* Background */}
       <div
         className="absolute inset-0 bg-cover bg-center"

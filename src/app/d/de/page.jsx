@@ -38,7 +38,7 @@ export default function MenuPage() {
   const [showSubcategories, setShowSubcategories] = useState(false);
   const [currentItems, setCurrentItems] = useState([]);
 
-  // 🔥 Track if drawer is open (to disable VerticalSnap)
+  // Track if drawer is open (to disable VerticalSnap)
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const categories = [...menuData.categories].sort(
@@ -132,7 +132,7 @@ export default function MenuPage() {
                 item={item}
                 index={index}
                 language={lang}
-                onDrawerToggle={setDrawerOpen}   // 🔥 VERY IMPORTANT
+                onDrawerToggle={setDrawerOpen}
               />
             ))}
           </VerticalSnap>

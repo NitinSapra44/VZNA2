@@ -58,7 +58,7 @@ export default function VerticalSnap({ children, isDrawerOpen }) {
     let wheelTimeout = null;
 
     const handleWheel = (e) => {
-      if (isDrawerOpen) return; // 🔥 disable scrolling during drawer open
+      if (isDrawerOpen) return; // Disable scrolling during drawer open
 
       e.preventDefault();
 
@@ -91,7 +91,7 @@ export default function VerticalSnap({ children, isDrawerOpen }) {
         MOBILE TOUCH
     ------------------------ */
     const handleTouchStart = (e) => {
-      if (isDrawerOpen) return; // 🔥 no swipe start if drawer open
+      if (isDrawerOpen) return; // No swipe start if drawer open
 
       const isInteractive = e.target.closest(
         "button, a, input, textarea, select, [role='button']"
@@ -108,7 +108,7 @@ export default function VerticalSnap({ children, isDrawerOpen }) {
     };
 
     const handleTouchEnd = (e) => {
-      if (isDrawerOpen) return; // 🔥 no swipe if drawer open
+      if (isDrawerOpen) return; // No swipe if drawer open
       if (scrollLocked.current) return;
 
       const endY = e.changedTouches[0].clientY;
@@ -133,7 +133,7 @@ export default function VerticalSnap({ children, isDrawerOpen }) {
         SCROLL CORRECTION
     ------------------------ */
     const handleScroll = () => {
-      if (isDrawerOpen) return; // 🔥 auto-snap OFF when drawer open
+      if (isDrawerOpen) return; // Auto-snap OFF when drawer open
       if (scrollLocked.current) return;
 
       const target = pageIndex.current * PAGE_HEIGHT();
