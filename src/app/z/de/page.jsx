@@ -4,7 +4,7 @@ import AppViewport from "@/app/components/AppViewport";
 import VerticalSnap from "@/app/components/VerticalSnap";
 import MenuTile from "@/app/components/MenuTile";
 import MenuDropdown from "@/app/components/MenuDropdown";
-import { menuData } from "@/data/menuData";
+import { menuData2 as menuData  } from "@/data/menudata2";
 
 /* ---------------------------------------------
    SORTING LOGIC (GLOBAL + REUSABLE)

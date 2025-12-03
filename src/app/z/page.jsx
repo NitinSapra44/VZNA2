@@ -76,7 +76,7 @@ export default function LanguageScreen() {
       {/* MAIN SCREEN */}
       <div className="flex flex-col items-center justify-center h-full gap-8 bg-[#DBDBDB] absolute inset-0">
         <div className="bg-white h-[95%] w-[90%] rounded-3xl flex flex-col items-center justify-center gap-6">
-          <Link href={language === "de" ? "/d/impressum" : "/d/imprint"}>
+          <Link href={language === "de" ? "/z/impressum" : "/z/imprint"}>
             <button
               style={{ fontFamily: "var(--font-fira-sans)" }}
               className="text-xl font-semibold text-gray-600 border-b-2 border-gray-600 hover:cursor-pointer"
