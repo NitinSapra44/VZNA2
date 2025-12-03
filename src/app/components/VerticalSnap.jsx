@@ -7,6 +7,7 @@ export default function VerticalSnap({ children, isDrawerOpen }) {
   const scrollLocked = useRef(false);
   const touchStartY = useRef(0);
   const isTouching = useRef(false);
+  const touchStartTime = useRef(0);
 
   const PAGE_COUNT = children.length;
   const PAGE_HEIGHT = () => window.innerHeight;
@@ -85,6 +86,7 @@ export default function VerticalSnap({ children, isDrawerOpen }) {
       
       isTouching.current = true;
       touchStartY.current = e.touches[0].clientY;
+      touchStartTime.current = Date.now();
     };
 
     const handleTouchMove = (e) => {
@@ -103,6 +105,9 @@ export default function VerticalSnap({ children, isDrawerOpen }) {
       if (scrollLocked.current) return;
 
       const diff = touchStartY.current - e.changedTouches[0].clientY;
+      const touchEndTime = Date.now();
+      const touchDuration = touchEndTime - touchStartTime.current;
+      const velocity = Math.abs(diff) / touchDuration; // pixels per millisecond
       
       // If swipe is too small, snap back to current page
       if (Math.abs(diff) < 20) {
@@ -114,10 +119,19 @@ export default function VerticalSnap({ children, isDrawerOpen }) {
       const direction = diff > 0 ? 1 : -1;
       let next = pageIndex.current + direction;
 
+      // For fast swipes (high velocity), allow skipping multiple pages
+      // but still show smooth animation
+      if (velocity > 1.5 && Math.abs(diff) > 100) {
+        // Fast swipe - could skip pages but animate smoothly
+        const pagesToSkip = Math.min(Math.floor(velocity / 2), 2);
+        next = pageIndex.current + (direction * Math.max(1, pagesToSkip));
+      }
+
       if (next < 0) next = PAGE_COUNT - 1;
       if (next >= PAGE_COUNT) next = 0;
 
-      scrollToPage(next);
+      // Always use smooth animation
+      scrollToPage(next, false);
     };
 
     /* ---------------- SCROLL FIX (REDUCED INTERFERENCE) ---------------- */
@@ -166,7 +180,6 @@ export default function VerticalSnap({ children, isDrawerOpen }) {
       className="h-[100svh] w-full overflow-y-scroll snap-y snap-mandatory no-scrollbar"
       style={{
         scrollSnapType: "y mandatory",
-        scrollSnapStop: "always",
         overscrollBehavior: "none",
         WebkitOverflowScrolling: "touch",
       }}
@@ -174,10 +187,9 @@ export default function VerticalSnap({ children, isDrawerOpen }) {
       {children.map((child, i) => (
         <div 
           key={i} 
-          className="h-[100svh] w-full snap-start snap-always"
+          className="h-[100svh] w-full snap-start"
           style={{
             scrollSnapAlign: "start",
-            scrollSnapStop: "always",
           }}
         >
           {child}
