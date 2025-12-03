@@ -18,13 +18,13 @@ export default function LanguageScreen() {
   const [isExiting, setIsExiting] = useState(false);
   const [removeIntro, setRemoveIntro] = useState(false);
 
-  // 🔥 Frozen last frame image
   const [frozenFrame, setFrozenFrame] = useState(null);
 
-  // Lottie ref
   const introLottieRef = useRef(null);
 
-  // ⏳ Intro timing + perfect smooth exit
+  /* --------------------------------------------------
+     PERFECT SMOOTH EXIT WITH 3-FRAME FIX
+  --------------------------------------------------- */
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowContent(true);
@@ -32,28 +32,40 @@ export default function LanguageScreen() {
       setTimeout(() => {
         try {
           if (introLottieRef.current) {
-            // Stop Lottie immediately
             introLottieRef.current.stop();
 
-            // Extract canvas frame
             const canvas =
               introLottieRef.current.getLottie().renderer.canvas;
 
             if (canvas) {
               const png = canvas.toDataURL("image/png");
               setFrozenFrame(png);
+
+              // ⭐ Preload the PNG to ensure it's fully decoded
+              const img = new Image();
+              img.src = png;
+
+              img.onload = () => {
+                // ⭐ Wait 3 frames before exit for PERFECT smoothness
+                requestAnimationFrame(() => {
+                  requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                      setIsExiting(true);
+                      setTimeout(() => setRemoveIntro(true), 850);
+                    });
+                  });
+                });
+              };
             }
           }
         } catch (err) {
           console.log("Freeze frame error:", err);
+
+          // Safe fallback
+          setIsExiting(true);
+          setTimeout(() => setRemoveIntro(true), 850);
         }
-
-        // Trigger slide-out
-        setIsExiting(true);
-
-        // Remove intro container fully after animation
-        setTimeout(() => setRemoveIntro(true), 850);
-      }, 50);
+      }, 80);
     }, 2000);
 
     return () => clearTimeout(timer);
@@ -61,7 +73,7 @@ export default function LanguageScreen() {
 
   return (
     <AppViewport>
-      {/* 🔹 Main Screen */}
+      {/* MAIN SCREEN */}
       <div className="flex flex-col items-center justify-center h-full gap-8 bg-[#DBDBDB] absolute inset-0">
         <div className="bg-white h-[95%] w-[90%] rounded-3xl flex flex-col items-center justify-center gap-6">
           <Link href={language === "de" ? "/d/impressum" : "/d/imprint"}>
@@ -73,15 +85,12 @@ export default function LanguageScreen() {
             </button>
           </Link>
 
-          {/* Language Toggle */}
           <LanguageToggle />
 
-          {/* Main Animation */}
           <div style={{ width: "100%" }}>
             <Lottie animationData={animationData} loop autoplay />
           </div>
 
-          {/* Instruction Text */}
           <p
             style={{ fontFamily: "var(--font-fira-sans)" }}
             className="text-center text-gray-600 text-lg px-6 leading-snug"
@@ -91,7 +100,6 @@ export default function LanguageScreen() {
               : "Swipe up to discover the menu."}
           </p>
 
-          {/* Continue Button */}
           <button
             style={{ fontFamily: "var(--font-fira-sans)" }}
             onClick={() => router.push(`/d/${language}`)}
@@ -105,14 +113,13 @@ export default function LanguageScreen() {
         </div>
       </div>
 
-      {/* 🔹 Intro Animation (Perfect Smooth Exit) */}
+      {/* INTRO WITH FREEZE-FRAME REPLACEMENT */}
       {!removeIntro && (
         <div
           className={`pointer-events-none will-change-transform flex items-center justify-center h-full w-full bg-[#DBDBDB] transition-transform duration-800 ease-in-out absolute inset-0 z-10 ${
             isExiting ? "-translate-y-full" : "translate-y-0"
           }`}
         >
-          {/* If frame is frozen → show static PNG (ZERO flicker) */}
           {frozenFrame ? (
             <img
               src={frozenFrame}

@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef } from "react";
 
-export default function VerticalSnap({ children }) {
+export default function VerticalSnap({ children, isDrawerOpen }) {
   const containerRef = useRef(null);
   const pageIndex = useRef(0);
   const scrollLocked = useRef(false);
@@ -17,7 +17,7 @@ export default function VerticalSnap({ children }) {
 
     const scrollToPage = (index, instant = false) => {
       if (scrollLocked.current && !instant) return;
-      
+
       scrollLocked.current = true;
       pageIndex.current = index;
 
@@ -26,7 +26,6 @@ export default function VerticalSnap({ children }) {
         behavior: instant ? "instant" : "smooth",
       });
 
-      // Fallback unlock
       if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
       scrollTimeout.current = setTimeout(() => {
         scrollLocked.current = false;
@@ -34,14 +33,15 @@ export default function VerticalSnap({ children }) {
     };
 
     const handleScrollEnd = () => {
-      scrollLocked.current = false;
-      
       if (scrollTimeout.current) {
         clearTimeout(scrollTimeout.current);
         scrollTimeout.current = null;
       }
 
-      // Snap correction
+      if (isDrawerOpen) return;
+
+      scrollLocked.current = false;
+
       const target = pageIndex.current * PAGE_HEIGHT();
       const diff = Math.abs(container.scrollTop - target);
 
@@ -52,9 +52,14 @@ export default function VerticalSnap({ children }) {
 
     container.addEventListener("scrollend", handleScrollEnd);
 
-    /* DESKTOP WHEEL - With infinite loop */
+    /* ------------------------
+        DESKTOP WHEEL
+    ------------------------ */
     let wheelTimeout = null;
+
     const handleWheel = (e) => {
+      if (isDrawerOpen) return; // 🔥 disable scrolling during drawer open
+
       e.preventDefault();
 
       if (wheelTimeout) clearTimeout(wheelTimeout);
@@ -75,20 +80,19 @@ export default function VerticalSnap({ children }) {
       const direction = deltaY > 0 ? 1 : -1;
       let next = pageIndex.current + direction;
 
-      // INFINITE LOOP LOGIC
-      if (next < 0) {
-        // Going up from first page → jump to last page
-        next = PAGE_COUNT - 1;
-      } else if (next >= PAGE_COUNT) {
-        // Going down from last page → jump to first page
-        next = 0;
-      }
+      // INFINITE LOOP
+      if (next < 0) next = PAGE_COUNT - 1;
+      if (next >= PAGE_COUNT) next = 0;
 
       scrollToPage(next);
     };
 
-    /* MOBILE TOUCH - With infinite loop */
+    /* ------------------------
+        MOBILE TOUCH
+    ------------------------ */
     const handleTouchStart = (e) => {
+      if (isDrawerOpen) return; // 🔥 no swipe start if drawer open
+
       const isInteractive = e.target.closest(
         "button, a, input, textarea, select, [role='button']"
       );
@@ -98,18 +102,18 @@ export default function VerticalSnap({ children }) {
     };
 
     const handleTouchMove = (e) => {
-      if (scrollLocked.current) {
+      if (scrollLocked.current || isDrawerOpen) {
         e.preventDefault();
       }
     };
 
     const handleTouchEnd = (e) => {
+      if (isDrawerOpen) return; // 🔥 no swipe if drawer open
       if (scrollLocked.current) return;
 
       const endY = e.changedTouches[0].clientY;
       const diff = touchStartY.current - endY;
 
-      // Minimum swipe threshold
       if (Math.abs(diff) < 50) {
         scrollToPage(pageIndex.current);
         return;
@@ -118,39 +122,39 @@ export default function VerticalSnap({ children }) {
       const direction = diff > 0 ? 1 : -1;
       let next = pageIndex.current + direction;
 
-      // INFINITE LOOP LOGIC
-      if (next < 0) {
-        // Swipe down from first page → jump to last page
-        next = PAGE_COUNT - 1;
-      } else if (next >= PAGE_COUNT) {
-        // Swipe up from last page → jump to first page
-        next = 0;
-      }
+      // INFINITE LOOP
+      if (next < 0) next = PAGE_COUNT - 1;
+      if (next >= PAGE_COUNT) next = 0;
 
       scrollToPage(next);
     };
 
-    // Prevent manual scrolling
+    /* ------------------------
+        SCROLL CORRECTION
+    ------------------------ */
     const handleScroll = () => {
-      if (!scrollLocked.current) {
-        const target = pageIndex.current * PAGE_HEIGHT();
-        const current = container.scrollTop;
-        const diff = Math.abs(current - target);
+      if (isDrawerOpen) return; // 🔥 auto-snap OFF when drawer open
+      if (scrollLocked.current) return;
 
-        if (diff > 5) {
-          container.scrollTo({ top: target });
-        }
+      const target = pageIndex.current * PAGE_HEIGHT();
+      const current = container.scrollTop;
+      const diff = Math.abs(current - target);
+
+      if (diff > 5) {
+        container.scrollTo({ top: target });
       }
     };
 
-    /* LISTENERS */
+    /* ------------------------
+        EVENT LISTENERS
+    ------------------------ */
     container.addEventListener("wheel", handleWheel, { passive: false });
     container.addEventListener("touchstart", handleTouchStart, { passive: true });
     container.addEventListener("touchmove", handleTouchMove, { passive: false });
     container.addEventListener("touchend", handleTouchEnd, { passive: false });
     container.addEventListener("scroll", handleScroll, { passive: true });
 
-    // Initial position
+    // Start at page 0
     container.scrollTo({ top: 0, behavior: "instant" });
 
     return () => {
@@ -160,10 +164,11 @@ export default function VerticalSnap({ children }) {
       container.removeEventListener("touchend", handleTouchEnd);
       container.removeEventListener("scrollend", handleScrollEnd);
       container.removeEventListener("scroll", handleScroll);
+
       if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
       if (wheelTimeout) clearTimeout(wheelTimeout);
     };
-  }, [PAGE_COUNT]);
+  }, [PAGE_COUNT, isDrawerOpen]);
 
   return (
     <div

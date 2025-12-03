@@ -1,9 +1,9 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AnimatePresence } from "framer-motion";
 import ProductDetail from "./ProductDetail";
 
-export default function MenuTile({ item, index, language }) {
+export default function MenuTile({ item, index, language, onDrawerToggle }) {
   const [isOpen, setIsOpen] = useState(false);
   const [showDrawer, setShowDrawer] = useState(false);
 
@@ -11,12 +11,14 @@ export default function MenuTile({ item, index, language }) {
     if (!isOpen) {
       setIsOpen(true);
       setShowDrawer(true);
+      onDrawerToggle(true); // 🔥 Tell VerticalSnap drawer opened
     }
   };
 
   const handleClose = () => {
     setShowDrawer(false);
     setIsOpen(false);
+    onDrawerToggle(false); // 🔥 Tell VerticalSnap drawer closed
   };
 
   const title = language === "de" ? item.title_de : item.title_en;
@@ -24,8 +26,8 @@ export default function MenuTile({ item, index, language }) {
 
   return (
     <div className="relative w-full h-[100svh] snap-center overflow-hidden">
-      
-      {/* Background image FIXED: no layout shift */}
+
+      {/* Background */}
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{ backgroundImage: `url(${item.image_url})` }}
@@ -36,10 +38,16 @@ export default function MenuTile({ item, index, language }) {
 
       {/* Bottom-left text */}
       <div className="absolute bottom-6 left-6 text-white max-w-md">
-        <h1 className="text-base mb-2" style={{ fontFamily: "var(--font-fira-sans)" }}>
+        <h1
+          className="text-base mb-2"
+          style={{ fontFamily: "var(--font-fira-sans)" }}
+        >
           {title}
         </h1>
-        <p className="text-base opacity-90" style={{ fontFamily: "var(--font-fira-sans)" }}>
+        <p
+          className="text-base opacity-90"
+          style={{ fontFamily: "var(--font-fira-sans)" }}
+        >
           {subtitle}
         </p>
       </div>

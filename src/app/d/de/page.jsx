@@ -4,7 +4,6 @@ import AppViewport from "@/app/components/AppViewport";
 import VerticalSnap from "@/app/components/VerticalSnap";
 import MenuTile from "@/app/components/MenuTile";
 import MenuDropdown from "@/app/components/MenuDropdown";
-import ProductDetail from "@/app/components/ProductDetail";
 import { menuData } from "@/data/menuData";
 
 /* ---------------------------------------------
@@ -32,12 +31,15 @@ function sortItems(a, b) {
 
 export default function MenuPage() {
   const lang = "de";  
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedSubcategory, setSelectedSubcategory] = useState(null);
   const [showSubcategories, setShowSubcategories] = useState(false);
   const [currentItems, setCurrentItems] = useState([]);
-  const [selectedItem, setSelectedItem] = useState(null);
+
+  // 🔥 Track if drawer is open (to disable VerticalSnap)
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const categories = [...menuData.categories].sort(
     (a, b) => a.order_index - b.order_index
@@ -93,22 +95,18 @@ export default function MenuPage() {
     setSelectedSubcategory(null);
   };
 
-  const handleOpenProduct = (index) => {
-    setSelectedItem(currentItems[index]);
-  };
-
   return (
     <AppViewport>
       <div className="relative h-full w-full">
 
-        {/* Fixed Logo - Top Left (absolute to stay within viewport) */}
+        {/* Fixed Logo */}
         <div className="absolute top-6 left-6 z-50 pointer-events-none">
-           <img 
+          <img 
             src="/logo.svg"
             alt="Restaurant Logo" 
             className="h-16 w-auto drop-shadow-lg border-b-2 border-white pb-3"
           />
-            <p className="text-white  text-xl">Dübendorf</p>
+          <p className="text-white text-xl">Dübendorf</p>
         </div>
 
         {/* Dropdown navigation */}
@@ -127,14 +125,14 @@ export default function MenuPage() {
 
         {/* Items View */}
         {currentItems.length > 0 ? (
-          <VerticalSnap>
+          <VerticalSnap isDrawerOpen={drawerOpen}>
             {currentItems.map((item, index) => (
               <MenuTile
                 key={item.id}
                 item={item}
                 index={index}
                 language={lang}
-                onOpenProduct={handleOpenProduct}
+                onDrawerToggle={setDrawerOpen}   // 🔥 VERY IMPORTANT
               />
             ))}
           </VerticalSnap>
@@ -151,15 +149,6 @@ export default function MenuPage() {
               </p>
             </div>
           </div>
-        )}
-
-        {/* Product Popup */}
-        {selectedItem && (
-          <ProductDetail
-            item={selectedItem}
-            onClose={() => setSelectedItem(null)}
-            language={lang}
-          />
         )}
       </div>
     </AppViewport>
