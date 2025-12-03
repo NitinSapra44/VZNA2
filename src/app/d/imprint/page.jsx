@@ -12,8 +12,8 @@ export default function Imprint() {
         className="flex flex-col items-center justify-center h-full bg-[#D5D5D5]"
         style={{ fontFamily: "var(--font-fira-sans)" }}
       >
-        {/* 🔷 WHITE CARD */}
-        <div className="h-[95%] w-[90%] bg-white rounded-3xl shadow-md px-6 py-4 ">
+        {/* 🔷 WHITE CARD */} 
+        <div className="h-[95%] w-[90%] bg-white rounded-3xl shadow-md px-6 py-4 overflow-y-auto ">
           <div className="flex flex-col gap-4 text-black text-base">
 
             <div>

@@ -13,7 +13,7 @@ export default function Imprint() {
         style={{ fontFamily: "var(--font-fira-sans)" }}
       >
         {/* 🔷 WHITE CARD */}
-        <div className="h-[95%] w-[90%] bg-white rounded-3xl shadow-md px-6 py-4 ">
+        <div className="h-[95%] w-[90%] bg-white rounded-3xl shadow-md px-6 py-4 overflow-y-auto  ">
           <div className="flex flex-col gap-4 text-black text-base">
 
             <div>
