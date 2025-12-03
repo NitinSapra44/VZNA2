@@ -70,7 +70,7 @@ export default function Impressum() {
             <button
               onClick={() => router.push("/z")}
               style={{ fontFamily: "var(--font-fira-sans)" }}
-              className="mt-8 w-[40%] flex items-center justify-between bg-[#D5D5D5] px-3 py-2 rounded-full text-black font-semibold text-lg shadow-md active:scale-95 transition-all"
+              className="mt-8 w-[55%] flex items-center justify-between bg-[#D5D5D5] px-3 py-2 rounded-full text-black font-semibold text-lg shadow-md active:scale-95 transition-all"
             >
               Schliessen
               <span className="bg-[#797979] rounded-full w-10 h-10 flex items-center justify-center">
