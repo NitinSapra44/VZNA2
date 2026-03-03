@@ -25,3 +25,35 @@ html, body {
 button {
   -webkit-tap-highlight-color: transparent;
 }
+
+/* Swiper base styles */
+.swiper {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+.swiper-wrapper {
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+}
+
+.swiper-slide {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+/* Prevent paint flicker */
+.swiper-slide-active,
+.swiper-slide-next,
+.swiper-slide-prev {
+  will-change: transform;
+}
+
+/* LINEAR MODE - Constant speed, mechanical feel */
+.vertical-snap-linear .swiper-wrapper {
+  transition-timing-function: linear !important;
+}

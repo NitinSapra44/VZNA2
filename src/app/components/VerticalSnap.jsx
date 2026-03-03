@@ -1,200 +1,178 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useRef, useEffect, useMemo, useCallback } from "react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Virtual, Mousewheel } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/virtual";
 
-export default function VerticalSnap({ children, isDrawerOpen }) {
-  const containerRef = useRef(null);
-  const pageIndex = useRef(0);
-  const scrollLocked = useRef(false);
-  const touchStartY = useRef(0);
-  const isTouching = useRef(false);
-  const touchStartTime = useRef(0);
+export default function VerticalSnap({ children, isDrawerOpen, onSlideChange }) {
+  const swiperRef = useRef(null);
+  const touchRef = useRef({
+    startY: 0,
+    startTime: 0,
+    lastY: 0,
+    lastTime: 0,
+    velocities: [],
+    startIndex: 0,
+  });
 
-  const PAGE_COUNT = children.length;
-  const PAGE_HEIGHT = () => window.innerHeight;
+  const slides = useMemo(() => children, [children]);
 
-  /* ---------------------------------------------------------
-        FREEZE SCROLL ONLY WHILE DRAWER IS OPEN
-  --------------------------------------------------------- */
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
+    if (!swiperRef.current) return;
     if (isDrawerOpen) {
-      scrollLocked.current = true;
-
-      const freezeTop = pageIndex.current * PAGE_HEIGHT();
-      container.scrollTo({ top: freezeTop, behavior: "instant" });
+      swiperRef.current.disable();
     } else {
-      // Unlock scrolling after drawer closes
-      setTimeout(() => {
-        scrollLocked.current = false;
-
-        // Correct minor layout shifts
-        const target = pageIndex.current * PAGE_HEIGHT();
-        container.scrollTo({ top: target, behavior: "instant" });
-      }, 100);
+      swiperRef.current.enable();
     }
   }, [isDrawerOpen]);
 
-  /* ---------------------------------------------------------
-        MAIN SCROLL LOGIC
-  --------------------------------------------------------- */
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
+  const handleSwiper = useCallback((swiper) => {
+    swiperRef.current = swiper;
+    if (swiper.wrapperEl) {
+      swiper.wrapperEl.style.transitionTimingFunction = "linear";
+    }
+    // Initialize with first slide
+    if (onSlideChange) {
+      onSlideChange(0, 0);
+    }
+  }, [onSlideChange]);
 
-    const scrollToPage = (index, instant = false) => {
-      if (scrollLocked.current) return;
-      if (isDrawerOpen) return;
+  const handleSlideChangeEvent = useCallback((swiper) => {
+    const newIndex = swiper.activeIndex;
+    const prevIndex = swiper.previousIndex;
+    const direction = newIndex > prevIndex ? 1 : -1;
 
-      scrollLocked.current = true;
-      pageIndex.current = index;
+    if (onSlideChange) {
+      onSlideChange(newIndex, direction);
+    }
+  }, [onSlideChange]);
 
-      container.scrollTo({
-        top: index * PAGE_HEIGHT(),
-        behavior: instant ? "instant" : "smooth",
-      });
+  const getEndVelocity = useCallback(() => {
+    const velocities = touchRef.current.velocities;
+    if (velocities.length === 0) return 0;
+    const recent = velocities.slice(-4);
+    return recent.reduce((a, b) => a + b, 0) / recent.length;
+  }, []);
 
-      setTimeout(() => {
-        scrollLocked.current = false;
-      }, 200);
+  const handleTouchStart = useCallback((swiper, e) => {
+    const touch = e.touches ? e.touches[0] : e;
+    touchRef.current = {
+      startY: touch.clientY,
+      startTime: Date.now(),
+      lastY: touch.clientY,
+      lastTime: Date.now(),
+      velocities: [],
+      startIndex: swiper.activeIndex,
     };
+  }, []);
 
-    /* ---------------- DESKTOP WHEEL ---------------- */
-    let wheelTimeout = null;
-    const handleWheel = (e) => {
-      if (isDrawerOpen) return;
-      e.preventDefault();
-      if (scrollLocked.current) return;
+  const handleTouchMove = useCallback((_swiper, e) => {
+    const touch = e.touches ? e.touches[0] : e;
+    const now = Date.now();
+    const dt = now - touchRef.current.lastTime;
 
-      if (wheelTimeout) clearTimeout(wheelTimeout);
-      wheelTimeout = setTimeout(() => {
-        const direction = e.deltaY > 0 ? 1 : -1;
-        let next = pageIndex.current + direction;
+    if (dt > 10) {
+      const velocity = (touch.clientY - touchRef.current.lastY) / dt;
+      touchRef.current.velocities.push(velocity);
 
-        if (next < 0) next = PAGE_COUNT - 1;
-        if (next >= PAGE_COUNT) next = 0;
-
-        scrollToPage(next);
-      }, 10);
-    };
-
-    /* ---------------- MOBILE SWIPE ---------------- */
-    const handleTouchStart = (e) => {
-      if (isDrawerOpen) return;
-      if (scrollLocked.current) return;
-      
-      isTouching.current = true;
-      touchStartY.current = e.touches[0].clientY;
-      touchStartTime.current = Date.now();
-    };
-
-    const handleTouchMove = (e) => {
-      if (isDrawerOpen) return;
-      // Allow natural scrolling during touch - don't prevent default
-      // unless we're locked from a previous animation
-      if (scrollLocked.current) {
-        e.preventDefault();
-      }
-    };
-
-    const handleTouchEnd = (e) => {
-      if (isDrawerOpen) return;
-      isTouching.current = false;
-      
-      if (scrollLocked.current) return;
-
-      const diff = touchStartY.current - e.changedTouches[0].clientY;
-      const touchEndTime = Date.now();
-      const touchDuration = touchEndTime - touchStartTime.current;
-      const velocity = Math.abs(diff) / touchDuration; // pixels per millisecond
-      
-      // If swipe is too small, snap back to current page
-      if (Math.abs(diff) < 20) {
-        scrollToPage(pageIndex.current, false);
-        return;
+      if (touchRef.current.velocities.length > 10) {
+        touchRef.current.velocities.shift();
       }
 
-      // Determine direction and next page
-      const direction = diff > 0 ? 1 : -1;
-      let next = pageIndex.current + direction;
+      touchRef.current.lastY = touch.clientY;
+      touchRef.current.lastTime = now;
+    }
+  }, []);
 
-      // For fast swipes (high velocity), allow skipping multiple pages
-      // but still show smooth animation
-      if (velocity > 1.5 && Math.abs(diff) > 100) {
-        // Fast swipe - could skip pages but animate smoothly
-        const pagesToSkip = Math.min(Math.floor(velocity / 2), 2);
-        next = pageIndex.current + (direction * Math.max(1, pagesToSkip));
-      }
+  const handleTouchEnd = useCallback(
+    (swiper) => {
+      const endVelocity = getEndVelocity();
+      const totalDistance = touchRef.current.lastY - touchRef.current.startY;
+      const totalTime = Date.now() - touchRef.current.startTime;
 
-      if (next < 0) next = PAGE_COUNT - 1;
-      if (next >= PAGE_COUNT) next = 0;
+      const absVelocity = Math.abs(endVelocity);
+      const absDistance = Math.abs(totalDistance);
+      const slideHeight = swiper.height || window.innerHeight;
 
-      // Always use smooth animation
-      scrollToPage(next, false);
-    };
+      const direction = totalDistance < 0 ? 1 : -1;
+      let shouldSlide = false;
 
-    /* ---------------- SCROLL FIX (REDUCED INTERFERENCE) ---------------- */
-    let scrollTimeout = null;
-    const handleScroll = () => {
-      if (isDrawerOpen) return;
-      if (scrollLocked.current) return;
-      if (isTouching.current) return; // Don't interfere during active touch
+      if (totalTime < 300 && absVelocity > 0.2) shouldSlide = true;
+      else if (absDistance > slideHeight * 0.5) shouldSlide = true;
+      else if (totalTime >= 300 && absVelocity > 0.4) shouldSlide = true;
 
-      // Clear previous timeout to debounce
-      if (scrollTimeout) clearTimeout(scrollTimeout);
-      
-      scrollTimeout = setTimeout(() => {
-        const target = pageIndex.current * PAGE_HEIGHT();
-        const diff = Math.abs(container.scrollTop - target);
+      const startIndex = touchRef.current.startIndex;
+      const targetIndex = startIndex + direction;
 
-        // Only correct if significantly off
-        if (diff > 50) {
-          container.scrollTo({ top: target, behavior: "instant" });
+      if (shouldSlide && targetIndex >= 0 && targetIndex < slides.length) {
+        swiper.slideTo(targetIndex, 150);
+        if (onSlideChange) {
+          onSlideChange(targetIndex, direction);
         }
-      }, 50);
-    };
-
-    /* ---------------- EVENT LISTENERS ---------------- */
-    container.addEventListener("wheel", handleWheel, { passive: false });
-    container.addEventListener("touchstart", handleTouchStart, { passive: true });
-    container.addEventListener("touchmove", handleTouchMove, { passive: false });
-    container.addEventListener("touchend", handleTouchEnd, { passive: false });
-    container.addEventListener("scroll", handleScroll, { passive: true });
-
-    return () => {
-      container.removeEventListener("wheel", handleWheel);
-      container.removeEventListener("touchstart", handleTouchStart);
-      container.removeEventListener("touchmove", handleTouchMove);
-      container.removeEventListener("touchend", handleTouchEnd);
-      container.removeEventListener("scroll", handleScroll);
-
-      if (wheelTimeout) clearTimeout(wheelTimeout);
-      if (scrollTimeout) clearTimeout(scrollTimeout);
-    };
-  }, [PAGE_COUNT, isDrawerOpen]);
+      } else {
+        swiper.slideTo(startIndex, 150);
+      }
+    },
+    [slides.length, getEndVelocity, onSlideChange]
+  );
 
   return (
-    <div
-      ref={containerRef}
-      className="h-[100svh] w-full overflow-y-scroll snap-y snap-mandatory no-scrollbar"
+    <Swiper
+      direction="vertical"
+      modules={[Virtual, Mousewheel]}
+      slidesPerView={1}
+      speed={100}
+      virtual={{
+        enabled: true,
+        addSlidesBefore: 2,
+        addSlidesAfter: 2,
+      }}
+      mousewheel={{
+        forceToAxis: true,
+        sensitivity: 0.5,
+        releaseOnEdges: false,
+        thresholdDelta: 20,
+        thresholdTime: 500,
+        eventsTarget: "container",
+      }}
+      touchStartPreventDefault={true}
+      passiveListeners={false}
+      preventInteractionOnTransition={true}
+      threshold={5}
+      followFinger={true}
+      touchRatio={1}
+      touchAngle={45}
+      longSwipes={false}
+      shortSwipes={false}
+      resistance={true}
+      resistanceRatio={0.85}
+      allowTouchMove={!isDrawerOpen}
+      watchSlidesProgress={true}
+      preloadImages={false}
+      lazy={true}
+      onSwiper={handleSwiper}
+      onSlideChange={handleSlideChangeEvent}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      className="w-full h-full vertical-snap-linear"
       style={{
-        scrollSnapType: "y mandatory",
-        overscrollBehavior: "none",
-        WebkitOverflowScrolling: "touch",
+        width: "100%",
+        height: "100%",
+        touchAction: "pan-y",
       }}
     >
-      {children.map((child, i) => (
-        <div 
-          key={i} 
-          className="h-[100svh] w-full snap-start"
-          style={{
-            scrollSnapAlign: "start",
-          }}
+      {slides.map((child, i) => (
+        <SwiperSlide
+          key={i}
+          virtualIndex={i}
+          className="w-full"
+          style={{ height: "100vh" }}
         >
           {child}
-        </div>
+        </SwiperSlide>
       ))}
-    </div>
+    </Swiper>
   );
 }
